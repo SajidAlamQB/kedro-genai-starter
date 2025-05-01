@@ -1,3 +1,3 @@
-"""kedro-rag-chatbot"""
+"""{{ cookiecutter.project_name }}"""
 
 __version__ = "0.1"
