@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-# kedro_rag_chatbot documentation build
+# {{ cookiecutter.python_package }} documentation build
 # configuration file, created by sphinx-quickstart.
 #
 # This file is execfile()d with the current directory set to its
@@ -21,11 +21,11 @@ import re
 
 from kedro.framework.cli.utils import find_stylesheets
 
-from kedro_rag_chatbot import __version__ as release
+from {{ cookiecutter.python_package }} import __version__ as release
 
 # -- Project information -----------------------------------------------------
 
-project = "kedro_rag_chatbot"
+project = "{{ cookiecutter.python_package }}"
 author = "Kedro"
 
 # The short X.Y version.
@@ -121,7 +121,7 @@ html_show_copyright = False
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "kedro_rag_chatbotdoc"
+htmlhelp_basename = "{{ cookiecutter.python_package }}doc"
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -149,8 +149,8 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "kedro_rag_chatbot.tex",
-        "kedro_rag_chatbot Documentation",
+        "{{ cookiecutter.python_package }}.tex",
+        "{{ cookiecutter.python_package }} Documentation",
         "Kedro",
         "manual",
     )
@@ -163,8 +163,8 @@ latex_documents = [
 man_pages = [
     (
         master_doc,
-        "kedro_rag_chatbot",
-        "kedro_rag_chatbot Documentation",
+        "{{ cookiecutter.python_package }}",
+        "{{ cookiecutter.python_package }} Documentation",
         [author],
         1,
     )
@@ -178,11 +178,11 @@ man_pages = [
 texinfo_documents = [
     (
         master_doc,
-        "kedro_rag_chatbot",
-        "kedro_rag_chatbot Documentation",
+        "{{ cookiecutter.python_package }}",
+        "{{ cookiecutter.python_package }} Documentation",
         author,
-        "kedro_rag_chatbot",
-        "Project kedro_rag_chatbot codebase.",
+        "{{ cookiecutter.python_package }}",
+        "Project {{ cookiecutter.python_package }} codebase.",
         "Data-Science",
     )
 ]

@@ -4,7 +4,7 @@ https://docs.kedro.org/en/stable/kedro_project_setup/settings.html."""
 
 # Instantiated project hooks.
 # For example, after creating a hooks.py and defining a ProjectHooks class there, do
-# from kedro_rag_chatbot.hooks import ProjectHooks
+# from {{ cookiecutter.python_package }}.hooks import ProjectHooks
 
 # Hooks are executed in a Last-In-First-Out (LIFO) order.
 # HOOKS = (ProjectHooks(),)

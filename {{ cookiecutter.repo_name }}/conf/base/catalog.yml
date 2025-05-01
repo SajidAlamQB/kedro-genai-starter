@@ -9,12 +9,12 @@ dialogs:
   copy_mode: "assign"
 
 vector_store_init:
-  type: kedro_rag_chatbot.datasets.DeeplakeVectorStoreDataset
+  type: {{ cookiecutter.python_package }}.datasets.DeeplakeVectorStoreDataset
   path: data/02_intermediate/vector_store/
   overwrite: True
 
 vector_store_load:
-  type: kedro_rag_chatbot.datasets.DeeplakeVectorStoreDataset
+  type: {{ cookiecutter.python_package }}.datasets.DeeplakeVectorStoreDataset
   path: data/02_intermediate/vector_store/
   overwrite: False
 
