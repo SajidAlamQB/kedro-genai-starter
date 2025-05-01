@@ -27,4 +27,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # Get the selected tools from cookiecutter
+    selected_tools = "{{ cookiecutter.tools }}"
+    main(selected_tools)
