@@ -1,2 +1,5 @@
-# 2 ** 16
-embedding_size: 65536
+# Vector store configuration
+vector_store_type: "pinecone"  # Options: "deeplake" (local) or "pinecone" (cloud)
+
+# Embedding size (2^14 = 16384)
+embedding_size: 16384

@@ -2,7 +2,6 @@ import logging
 from typing import Any, Callable
 
 import numpy as np
-from deeplake.core.vectorstore import VectorStore
 from sklearn.feature_extraction.text import HashingVectorizer
 
 logger = logging.getLogger(__name__)
@@ -53,7 +52,8 @@ def create_embedding_function() -> Callable:
     Returns:
         A function that generates embeddings from text.
     """
-    def embedding_function(texts: list[str], embeddings_size: int = 2**16) -> list:
+
+    def embedding_function(texts: list[str], embeddings_size: int = 2 ** 16) -> list:
         if isinstance(texts, str):
             texts = [texts]
         vectorizer = HashingVectorizer(n_features=embeddings_size, dtype=np.float32)
@@ -64,25 +64,57 @@ def create_embedding_function() -> Callable:
     return embedding_function
 
 
-def create_vector_store(
-    vector_store: VectorStore,
-    formatted_dialogs: dict[str, str],
-    embedding_function: Callable,
-    embeddings_size: int,
-) -> VectorStore:
-    """Populates a DeepLake VectorStore with formatted dialog texts and their embeddings.
+def select_vector_store(
+        vector_store_type: str,
+        deeplake_vector_store_init=None,
+        pinecone_vector_store_init=None,
+) -> Any:
+    """Selects the appropriate vector store based on the configuration.
 
     Args:
-        vector_store: The DeepLake VectorStore instance to populate.
-        formatted_dialogs: A dictionary of dialog names and their formatted text.
-        embedding_function: Function to generate embeddings.
-        embeddings_size: The size of the embedding vector.
+        vector_store_type: The type of vector store to use ("deeplake" or "pinecone")
+        deeplake_vector_store_init: DeepLake vector store instance
+        pinecone_vector_store_init: Pinecone vector store instance
 
     Returns:
-        The updated vector store containing the new dialog data.
+        The selected vector store instance
+    """
+    if vector_store_type.lower() == "deeplake":
+        if deeplake_vector_store_init is None:
+            raise ValueError("DeepLake vector store is not initialized")
+        return deeplake_vector_store_init
+    elif vector_store_type.lower() == "pinecone":
+        if pinecone_vector_store_init is None:
+            raise ValueError("Pinecone vector store is not initialized")
+        return pinecone_vector_store_init
+    else:
+        raise ValueError(f"Unsupported vector store type: {vector_store_type}")
+
+
+def create_vector_store(
+        vector_store: Any,
+        formatted_dialogs: dict[str, str],
+        embedding_function: Callable,
+        embeddings_size: int,
+) -> Any:
+    """Populates a vector store with formatted dialog texts and their embeddings.
+
+    Works with both DeepLake and Pinecone vector stores thanks to the adapter pattern
+    implemented in the dataset classes.
+
+    Args:
+        vector_store: The vector store instance to populate
+        formatted_dialogs: A dictionary of dialog names and their formatted text
+        embedding_function: Function to generate embeddings
+        embeddings_size: The size of the embedding vector
+
+    Returns:
+        The updated vector store containing the new dialog data
     """
     texts = [dialog for dialog in formatted_dialogs.values()]
     embeddings = embedding_function(texts, embeddings_size)
+
+    # Both DeepLake and Pinecone wrappers implement a compatible .add() method
     vector_store.add(
         text=texts,
         embedding=embeddings,

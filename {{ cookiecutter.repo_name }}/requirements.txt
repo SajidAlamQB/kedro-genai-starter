@@ -11,3 +11,4 @@ openai~=1.70.0
 langchain-openai~=0.3.12
 kedro-datasets[partitions-partitioneddataset]>=3.0; python_version >= "3.9"
 questionary~=2.1.0
+pinecone-client>=2.2.0

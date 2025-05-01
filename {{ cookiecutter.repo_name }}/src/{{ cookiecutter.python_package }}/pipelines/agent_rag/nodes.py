@@ -2,7 +2,6 @@ import logging
 from typing import Any, Callable
 
 import questionary
-from deeplake.core.vectorstore import VectorStore
 from langchain.agents import AgentExecutor, tool
 from langchain.agents.format_scratchpad.openai_tools import (
     format_to_openai_tool_messages,
@@ -17,21 +16,53 @@ logger = logging.getLogger(__name__)
 FALLBACK_MESSAGE = "No relevant context found"
 
 
+def select_vector_store(
+        vector_store_type: str,
+        deeplake_vector_store_load=None,
+        pinecone_vector_store_load=None,
+) -> Any:
+    """Selects the appropriate vector store based on the configuration.
+
+    Args:
+        vector_store_type: The type of vector store to use ("deeplake" or "pinecone")
+        deeplake_vector_store_load: DeepLake vector store instance
+        pinecone_vector_store_load: Pinecone vector store instance
+
+    Returns:
+        The selected vector store instance
+    """
+    if vector_store_type.lower() == "deeplake":
+        if deeplake_vector_store_load is None:
+            raise ValueError("DeepLake vector store is not initialized")
+        return deeplake_vector_store_load
+    elif vector_store_type.lower() == "pinecone":
+        if pinecone_vector_store_load is None:
+            raise ValueError("Pinecone vector store is not initialized")
+        return pinecone_vector_store_load
+    else:
+        raise ValueError(f"Unsupported vector store type: {vector_store_type}")
+
+
 def create_tools(
-    vector_store: VectorStore, embedding_function: Callable
+        vector_store: Any, embedding_function: Callable
 ) -> list[Callable]:
     """Creates a tool for retrieving context from the vector store based on user queries.
 
+    Compatible with both DeepLake and Pinecone vector stores thanks to the adapter pattern
+    implemented in the dataset classes.
+
     Args:
-        vector_store: The DeepLake vector store instance.
-        embedding_function: The function used for embedding user queries.
+        vector_store: The vector store instance
+        embedding_function: The function used for embedding user queries
 
     Returns:
-        A list containing the retrieval tool.
+        A list containing the retrieval tool
     """
+
     @tool
     def get_context_from_vector_store(user_question: str) -> str:
         """Returns the context found in vector store based on user question."""
+        # Both DeepLake and Pinecone wrappers implement a compatible .search() method
         output = vector_store.search(
             embedding_data=user_question, embedding_function=embedding_function, k=1
         )["text"]
@@ -42,7 +73,7 @@ def create_tools(
 
 
 def init_llm(
-    openai_llm: ChatOpenAI, tools: list[Callable]
+        openai_llm: ChatOpenAI, tools: list[Callable]
 ) -> tuple[ChatOpenAI, Runnable]:
     """Initializes the LLM with provided tools.
 
@@ -81,7 +112,7 @@ def create_chat_prompt(system_prompt: str) -> ChatPromptTemplate:
 
 
 def create_agent(
-    llm_with_tools: Runnable, chat_prompt: ChatPromptTemplate
+        llm_with_tools: Runnable, chat_prompt: ChatPromptTemplate
 ) -> RunnableSerializable:
     """Creates an AI agent using the provided LLM and chat prompt.
 
@@ -93,21 +124,21 @@ def create_agent(
         RunnableSerializable: The AI agent instance.
     """
     agent: RunnableSerializable = (
-        {
-            "input": lambda x: x["input"],
-            "agent_scratchpad": lambda x: format_to_openai_tool_messages(
-                x["intermediate_steps"]
-            ),
-        }
-        | chat_prompt
-        | llm_with_tools
-        | OpenAIToolsAgentOutputParser()
+            {
+                "input": lambda x: x["input"],
+                "agent_scratchpad": lambda x: format_to_openai_tool_messages(
+                    x["intermediate_steps"]
+                ),
+            }
+            | chat_prompt
+            | llm_with_tools
+            | OpenAIToolsAgentOutputParser()
     )
     return agent
 
 
 def create_agent_executor(
-    agent: RunnableSerializable, tools: list[Callable]
+        agent: RunnableSerializable, tools: list[Callable]
 ) -> AgentExecutor:
     """Creates an agent executor to manage interactions with the AI agent.
 
@@ -149,17 +180,24 @@ def invoke_llm(llm: ChatOpenAI, input_query: str) -> str:
     return llm.invoke(input_query).text()
 
 
-def user_interaction_loop(agent_executor: AgentExecutor, llm: ChatOpenAI) -> str:
+def user_interaction_loop(
+        agent_executor: AgentExecutor,
+        llm: ChatOpenAI,
+        vector_store_type: str
+) -> str:
     """Interactive loop to receive user input and process responses from the LLM and agent.
 
     Args:
         agent_executor: The agent executor.
         llm: The ChatOpenAI instance.
+        vector_store_type: The type of vector store being used
 
     Returns:
         A formatted string containing all interactions.
     """
     res = []
+    print(f"\n🔍 Using {vector_store_type.upper()} as the vector database backend\n")
+
     while True:
         user_query = questionary.text(
             "Enter question about Kedro or type `exit` to stop:"
@@ -180,6 +218,7 @@ def user_interaction_loop(agent_executor: AgentExecutor, llm: ChatOpenAI) -> str
         retrieved_context = (
             f"### Retrieved Context:\n{context}\n"
         )
+        vector_db_info = f"### Vector Database: {vector_store_type}\n"
 
         res.append(
             "\n".join(
@@ -188,6 +227,7 @@ def user_interaction_loop(agent_executor: AgentExecutor, llm: ChatOpenAI) -> str
                     llm_res,
                     agent_res,
                     retrieved_context,
+                    vector_db_info,
                     agent_intermediate_steps,
                 ]
             )

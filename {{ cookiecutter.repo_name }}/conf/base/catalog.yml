@@ -8,15 +8,39 @@ dialogs:
   type: MemoryDataset
   copy_mode: "assign"
 
-vector_store_init:
+# Choose which vector store implementation to use
+# Available options: "deeplake" or "pinecone"
+vector_store_type:
+  type: MemoryDataset
+  data: "${vector_store_type:deeplake}"  # Default to deeplake if not specified
+
+# DeepLake Vector Store (local file-based)
+deeplake_vector_store_init:
   type: {{ cookiecutter.python_package }}.datasets.DeeplakeVectorStoreDataset
-  path: data/02_intermediate/vector_store/
+  path: data/02_intermediate/deeplake_vector_store/
   overwrite: True
 
-vector_store_load:
+deeplake_vector_store_load:
   type: {{ cookiecutter.python_package }}.datasets.DeeplakeVectorStoreDataset
-  path: data/02_intermediate/vector_store/
+  path: data/02_intermediate/deeplake_vector_store/
   overwrite: False
+
+# Pinecone Vector Store (cloud-based)
+pinecone_vector_store_init:
+  type: {{ cookiecutter.python_package }}.datasets.PineconeVectorStoreDataset
+  api_key: "${pinecone.api_key}"
+  environment: "${pinecone.environment}"
+  index_name: "${pinecone.index_name}"
+  dimension: "${params:embedding_size}"
+  metric: "cosine"
+
+pinecone_vector_store_load:
+  type: {{ cookiecutter.python_package }}.datasets.PineconeVectorStoreDataset
+  api_key: "${pinecone.api_key}"
+  environment: "${pinecone.environment}"
+  index_name: "${pinecone.index_name}"
+  dimension: "${params:embedding_size}"
+  metric: "cosine"
 
 openai_llm:
  type: kedro_datasets_experimental.langchain.ChatOpenAIDataset
