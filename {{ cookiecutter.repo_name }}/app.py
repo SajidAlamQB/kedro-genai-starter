@@ -100,7 +100,12 @@ async def run_pipeline(pipeline_name: str):
                 },
             )
 
+    logger.info(
+        "Pipeline run completed",
+        pipeline_name=pipeline_name,
+        output_vars=list(output.keys()),
+    )
     return {
         "success": True,
-        "output": output,
+        "output_vars": list(output.keys()),
     }
