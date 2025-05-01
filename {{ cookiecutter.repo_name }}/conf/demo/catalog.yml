@@ -1,0 +1,6 @@
+openai_llm:
+ type: kedro_datasets_experimental.langchain.ChatOpenAIDataset
+ kwargs:
+   model: "qwen3:8b"
+   temperature: 0.0
+ credentials: ollama
