@@ -1,5 +1,5 @@
-"""kedro-rag-chatbot file for ensuring the package is executable
-as `kedro-rag-chatbot` and `python -m kedro_rag_chatbot`
+"""{{ cookiecutter.project_name }} file for ensuring the package is executable
+as `{{ cookiecutter.repo_name }}` and `python -m {{ cookiecutter.python_package }}`
 """
 
 import sys

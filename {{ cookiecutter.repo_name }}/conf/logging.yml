@@ -36,7 +36,7 @@ loggers:
   kedro:
     level: INFO
 
-  kedro_rag_chatbot:
+  {{ cookiecutter.python_package }}:
     level: INFO
 
 root:

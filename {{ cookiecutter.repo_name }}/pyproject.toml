@@ -3,12 +3,12 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kedro_rag_chatbot"
+name = "{{ cookiecutter.python_package }}"
 readme = "README.md"
 dynamic = ["version"]
 requires-python = ">=3.11"
 dependencies = [
-    "kedro~=0.19.9",
+    "kedro~={{ cookiecutter.kedro_version }}",
     "langchain>=0.3.0",
     "scikit-learn~=1.5.1",
     "deeplake==3.9.16",
@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.scripts]
-kedro-rag-chatbot = "kedro_rag_chatbot.__main__:main"
+{{ cookiecutter.repo_name }} = "{{ cookiecutter.python_package }}.__main__:main"
 
 [project.entry-points."kedro.hooks"]
 
@@ -47,16 +47,16 @@ dev = [
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "kedro_rag_chatbot.__version__"}
+version = {attr = "{{ cookiecutter.python_package }}.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
 namespaces = false
 
 [tool.kedro]
-package_name = "kedro_rag_chatbot"
-project_name = "kedro-rag-chatbot"
-kedro_init_version = "0.19.9"
+package_name = "{{ cookiecutter.python_package }}"
+project_name = "{{ cookiecutter.repo_name }}"
+kedro_init_version = "{{ cookiecutter.kedro_version }}"
 tools = ['None']
 example_pipeline = "False"
 source_dir = "src"
@@ -64,7 +64,7 @@ source_dir = "src"
 [tool.pytest.ini_options]
 addopts = """
 --cov-report term-missing \
---cov src/kedro_rag_chatbot -ra"""
+--cov src/{{ cookiecutter.python_package }} -ra"""
 
 [tool.coverage.report]
 fail_under = 0
@@ -87,6 +87,3 @@ lint.select = [
     "T201", # Print Statement
 ]
 lint.ignore = ["E501"]  # Ruff format takes care of line-too-long
-
-[tool.kedro_telemetry]
-project_id = "a3f78097e2b34a4dbd1d422c19e19c0c"
