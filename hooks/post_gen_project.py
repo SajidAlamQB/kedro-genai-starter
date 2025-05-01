@@ -3,7 +3,7 @@ from pathlib import Path
 from kedro.templates.project.hooks.utils import setup_template_tools, sort_requirements
 
 
-def main():
+def main(selected_tools):
     current_dir = Path.cwd()
     requirements_file_path = current_dir / "requirements.txt"
     pyproject_file_path = current_dir / "pyproject.toml"
