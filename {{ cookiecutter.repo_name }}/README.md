@@ -17,18 +17,59 @@ See the demo on [YouTube](https://www.youtube.com/watch?v=rgmANk-QwYg).
 
 ## Setup
 
-### 1. Clone the Repository
+### 1. Create the Kedro Starter
 ```console
-git clone https://github.com/kedro-org/kedro-academy.git
-cd kedro-academy/kedro-rag-chatbot
+kedro new -s kedro-genai-starter
+cd YOUR_PROJECT_NAME
 ```
 
 ### 2. Install Dependencies
-
 ```console
-pip install -r requirements.txt
+pip install .
 ```
-### 3. Add API Credentials
+
+### 3. Choose Vector Store Configuration
+
+This project supports two vector database options:
+
+* **DeepLake**: A file-based local vector store (great for development)
+* **Pinecone**: A cloud-based vector database (better for production)
+
+In `parameters.yml` in `conf/base/` you can switch between both vector options and choose an embedding size:
+
+#### DeepLake Setup
+DeepLake stores your vector embeddings locally in the `data/02_intermediate/deeplake_vector_store/` directory. This option requires no additional setup beyond installing the required packages and is ideal for local development and testing.
+
+`conf/base/parameters.yml`:
+```yaml
+# Vector store configuration 
+vector_store_type: "deeplake"  # Options: "deeplake" (local) or "pinecone" (cloud)
+
+# Embedding size (2^14 = 16384)
+embedding_size: 16384
+```
+
+#### Pinecone Setup
+1. From the Pinecone dashboard, click "Create Index"
+2. Configure your index with these required settings:
+   * **Index Name**: Choose a unique name
+   * **Dimensions**: 16384 (must match your `embedding_size` parameter)
+   * **Metric**: cosine (recommended for text similarity)
+   * **Cloud Provider**: AWS (or your preferred provider)
+   * **Region**: Choose a region (e.g., "us-east-1")
+
+> **Note**: The free tier of Pinecone has limitations. For example, you may be restricted to specific regions and only one active index.
+
+`conf/base/parameters.yml`:
+```yaml
+# Vector store configuration
+vector_store_type: "pinecone"  # Options: "deeplake" (local) or "pinecone" (cloud)
+
+# Embedding size (2^14 = 16384)
+embedding_size: 16384
+```
+
+### 4. Add API Credentials
 
 Create a `credentials.yml` file and place it in the `conf/local/` directory with the following format:
 ```yaml
@@ -36,6 +77,12 @@ openai:
   # openai_api_base is optional
   openai_api_base: <openai-api-base>
   openai_api_key: <openai-api-key>
+
+# Pinecone credentials (required if using vector_store_type: pinecone)
+pinecone:
+  api_key: "ENTER_KEY_HERE"
+  environment: "us-east-1" # PICK SERVER
+  index_name: "ENTER_INDEX_NAME"
 ```
 
 ### 4. Verify Data Availability
