@@ -53,7 +53,17 @@ def create_embedding_function() -> Callable:
         A function that generates embeddings from text.
     """
 
-    def embedding_function(texts: list[str], embeddings_size: int = 2 ** 16) -> list:
+    def embedding_function(texts: list[str], embeddings_size: int = 16384):
+        """Generate embeddings from text using HashingVectorizer.
+
+        Args:
+            texts: List of text strings to embed
+            embeddings_size: Size of the embedding vectors, defaults to 16384 (2^14)
+                             to match Pinecone index configuration
+
+        Returns:
+            List of embedding vectors
+        """
         if isinstance(texts, str):
             texts = [texts]
         vectorizer = HashingVectorizer(n_features=embeddings_size, dtype=np.float32)
@@ -85,7 +95,10 @@ def select_vector_store(
         return deeplake_vector_store_init
     elif vector_store_type.lower() == "pinecone":
         if pinecone_vector_store_init is None:
-            raise ValueError("Pinecone vector store is not initialized")
+            print("WARNING: Pinecone vector store not available. Falling back to DeepLake.")
+            if deeplake_vector_store_init is None:
+                raise ValueError("DeepLake vector store (fallback) is not initialized")
+            return deeplake_vector_store_init
         return pinecone_vector_store_init
     else:
         raise ValueError(f"Unsupported vector store type: {vector_store_type}")
@@ -112,6 +125,7 @@ def create_vector_store(
         The updated vector store containing the new dialog data
     """
     texts = [dialog for dialog in formatted_dialogs.values()]
+    # Make sure to use the configured embedding size
     embeddings = embedding_function(texts, embeddings_size)
 
     # Both DeepLake and Pinecone wrappers implement a compatible .add() method
@@ -120,6 +134,6 @@ def create_vector_store(
         embedding=embeddings,
         metadata=[{"dialog_id": dialog_id} for dialog_id in formatted_dialogs.keys()],
     )
-    logger.info("Vector store populated with dialog embeddings.")
+    logger.info(f"Vector store populated with dialog embeddings of dimension {embeddings_size}.")
 
     return vector_store

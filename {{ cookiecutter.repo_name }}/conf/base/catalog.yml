@@ -8,12 +8,6 @@ dialogs:
   type: MemoryDataset
   copy_mode: "assign"
 
-# Choose which vector store implementation to use
-# Available options: "deeplake" or "pinecone"
-vector_store_type:
-  type: MemoryDataset
-  data: "${vector_store_type:deeplake}"  # Default to deeplake if not specified
-
 # DeepLake Vector Store (local file-based)
 deeplake_vector_store_init:
   type: {{ cookiecutter.python_package }}.datasets.DeeplakeVectorStoreDataset
@@ -28,19 +22,15 @@ deeplake_vector_store_load:
 # Pinecone Vector Store (cloud-based)
 pinecone_vector_store_init:
   type: {{ cookiecutter.python_package }}.datasets.PineconeVectorStoreDataset
-  api_key: "${pinecone.api_key}"
-  environment: "${pinecone.environment}"
-  index_name: "${pinecone.index_name}"
-  dimension: "${params:embedding_size}"
+  dimension: 16384
   metric: "cosine"
+  credentials: pinecone
 
 pinecone_vector_store_load:
   type: {{ cookiecutter.python_package }}.datasets.PineconeVectorStoreDataset
-  api_key: "${pinecone.api_key}"
-  environment: "${pinecone.environment}"
-  index_name: "${pinecone.index_name}"
-  dimension: "${params:embedding_size}"
+  dimension: 16384
   metric: "cosine"
+  credentials: pinecone
 
 openai_llm:
  type: kedro_datasets_experimental.langchain.ChatOpenAIDataset

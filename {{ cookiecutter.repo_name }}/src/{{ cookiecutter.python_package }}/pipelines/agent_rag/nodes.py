@@ -17,9 +17,9 @@ FALLBACK_MESSAGE = "No relevant context found"
 
 
 def select_vector_store(
-        vector_store_type: str,
-        deeplake_vector_store_load=None,
-        pinecone_vector_store_load=None,
+    vector_store_type: str,
+    deeplake_vector_store_load=None,
+    pinecone_vector_store_load=None,
 ) -> Any:
     """Selects the appropriate vector store based on the configuration.
 
@@ -37,7 +37,10 @@ def select_vector_store(
         return deeplake_vector_store_load
     elif vector_store_type.lower() == "pinecone":
         if pinecone_vector_store_load is None:
-            raise ValueError("Pinecone vector store is not initialized")
+            print("WARNING: Pinecone vector store not available. Falling back to DeepLake.")
+            if deeplake_vector_store_load is None:
+                raise ValueError("DeepLake vector store (fallback) is not initialized")
+            return deeplake_vector_store_load
         return pinecone_vector_store_load
     else:
         raise ValueError(f"Unsupported vector store type: {vector_store_type}")
