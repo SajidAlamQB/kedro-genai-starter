@@ -19,8 +19,12 @@ if st.button("Submit"):
                     "params": {"user_query": prompt}
                 }
             )
-            output = response.json().get("response", "No response received.")
-            st.success("Response received successfully!")
+            response.raise_for_status()
+            st.success("Pipeline triggered successfully!")
+
+            results_response = requests.get("http://localhost:8000/hack/results")
+            results_response.raise_for_status()
+            output = results_response.json().get("content", "No content available.")
         except Exception as e:
             output = f"Error: {e}"
             st.error("Failed to fetch the response.")
@@ -28,4 +32,4 @@ else:
     output = ""
 
 # Output display
-st.text_area("Output:", value=output, height=200)
+st.markdown(output)
