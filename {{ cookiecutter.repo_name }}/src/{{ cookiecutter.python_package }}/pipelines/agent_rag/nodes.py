@@ -186,7 +186,8 @@ def invoke_llm(llm: ChatOpenAI, input_query: str) -> str:
 def user_interaction_loop(
         agent_executor: AgentExecutor,
         llm: ChatOpenAI,
-        vector_store_type: str
+        vector_store_type: str,
+        user_query: str
 ) -> str:
     """Interactive loop to receive user input and process responses from the LLM and agent.
 
@@ -194,6 +195,7 @@ def user_interaction_loop(
         agent_executor: The agent executor.
         llm: The ChatOpenAI instance.
         vector_store_type: The type of vector store being used
+        user_query: The query string passed through Kedro parameters.
 
     Returns:
         A formatted string containing all interactions.
@@ -201,43 +203,37 @@ def user_interaction_loop(
     res = []
     print(f"\n🔍 Using {vector_store_type.upper()} as the vector database backend\n")
 
-    while True:
-        user_query = questionary.text(
-            "Enter question about Kedro or type `exit` to stop:"
-        ).ask()
-        if user_query.lower() == "exit":
-            break
-        llm_response = invoke_llm(llm, user_query)
-        agent_response = invoke_agent(agent_executor, user_query)
+    llm_response = invoke_llm(llm, user_query)
+    agent_response = invoke_agent(agent_executor, user_query)
 
-        input_res = f"### User Input: {user_query}\n"
-        llm_res = f"### LLM Output:\n{llm_response}\n"
-        agent_res = f"### Agent Output:\n{agent_response['output']}\n"
-        agent_intermediate_steps = f"### Agent Intermediate Steps:\n```json\n{agent_response['intermediate_steps']}\n```\n"
-        try:
-            context = agent_response['intermediate_steps'][0][1]
-        except IndexError:
-            context = FALLBACK_MESSAGE
-        retrieved_context = (
-            f"### Retrieved Context:\n{context}\n"
+    input_res = f"### User Input: {user_query}\n"
+    llm_res = f"### LLM Output:\n{llm_response}\n"
+    agent_res = f"### Agent Output:\n{agent_response['output']}\n"
+    agent_intermediate_steps = f"### Agent Intermediate Steps:\n```json\n{agent_response['intermediate_steps']}\n```\n"
+    try:
+        context = agent_response['intermediate_steps'][0][1]
+    except IndexError:
+        context = FALLBACK_MESSAGE
+    retrieved_context = (
+        f"### Retrieved Context:\n{context}\n"
+    )
+    vector_db_info = f"### Vector Database: {vector_store_type}\n"
+
+    res.append(
+        "\n".join(
+            [
+                input_res,
+                llm_res,
+                agent_res,
+                retrieved_context,
+                vector_db_info,
+                agent_intermediate_steps,
+            ]
         )
-        vector_db_info = f"### Vector Database: {vector_store_type}\n"
+    )
 
-        res.append(
-            "\n".join(
-                [
-                    input_res,
-                    llm_res,
-                    agent_res,
-                    retrieved_context,
-                    vector_db_info,
-                    agent_intermediate_steps,
-                ]
-            )
-        )
-
-        logger.info(input_res)
-        logger.info(llm_res)
-        logger.info(agent_res)
+    logger.info(input_res)
+    logger.info(llm_res)
+    logger.info(agent_res)
 
     return "\n\n".join(res)

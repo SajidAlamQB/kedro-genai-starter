@@ -11,7 +11,7 @@ dependencies = [
     "kedro~={{ cookiecutter.kedro_version }}",
     "langchain>=0.3.0",
     "scikit-learn~=1.5.1",
-    "deeplake==3.9.16",
+    "deeplake[labelbox]~=3.9.16",
     "openai~=1.70.0",
     "langchain-openai~=0.3.12",
     "kedro-datasets>=3.0",
