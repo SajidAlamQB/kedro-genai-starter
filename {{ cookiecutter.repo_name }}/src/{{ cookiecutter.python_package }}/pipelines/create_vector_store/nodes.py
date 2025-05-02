@@ -75,9 +75,9 @@ def create_embedding_function() -> Callable:
 
 
 def select_vector_store(
-        vector_store_type: str,
-        deeplake_vector_store_init=None,
-        pinecone_vector_store_init=None,
+    vector_store_type: str,
+    deeplake_vector_store_init=None,
+    pinecone_vector_store_init=None,
 ) -> Any:
     """Selects the appropriate vector store based on the configuration.
 
@@ -95,7 +95,9 @@ def select_vector_store(
         return deeplake_vector_store_init
     elif vector_store_type.lower() == "pinecone":
         if pinecone_vector_store_init is None:
-            print("WARNING: Pinecone vector store not available. Falling back to DeepLake.")
+            print(
+                "WARNING: Pinecone vector store not available. Falling back to DeepLake."
+            )
             if deeplake_vector_store_init is None:
                 raise ValueError("DeepLake vector store (fallback) is not initialized")
             return deeplake_vector_store_init
@@ -105,10 +107,10 @@ def select_vector_store(
 
 
 def create_vector_store(
-        vector_store: Any,
-        formatted_dialogs: dict[str, str],
-        embedding_function: Callable,
-        embeddings_size: int,
+    vector_store: Any,
+    formatted_dialogs: dict[str, str],
+    embedding_function: Callable,
+    embeddings_size: int,
 ) -> Any:
     """Populates a vector store with formatted dialog texts and their embeddings.
 
@@ -134,6 +136,8 @@ def create_vector_store(
         embedding=embeddings,
         metadata=[{"dialog_id": dialog_id} for dialog_id in formatted_dialogs.keys()],
     )
-    logger.info(f"Vector store populated with dialog embeddings of dimension {embeddings_size}.")
+    logger.info(
+        f"Vector store populated with dialog embeddings of dimension {embeddings_size}."
+    )
 
     return vector_store

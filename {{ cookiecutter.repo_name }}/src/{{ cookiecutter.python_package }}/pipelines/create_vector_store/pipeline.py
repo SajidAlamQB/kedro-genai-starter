@@ -22,7 +22,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                 inputs=[],
                 outputs="embedding_function",
                 name="create_embedding_function_node",
-                tags="agent_rag"
+                tags="agent_rag",
             ),
             node(
                 func=select_vector_store,

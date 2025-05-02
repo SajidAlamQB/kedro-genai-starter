@@ -56,10 +56,15 @@ def create_pipeline(**kwargs) -> Pipeline:
             ),
             node(
                 func=user_interaction_loop,
-                inputs=["agent_executor", "llm", "params:vector_store_type", "params:user_query"],
+                inputs=[
+                    "agent_executor",
+                    "llm",
+                    "params:vector_store_type",
+                    "params:user_query",
+                ],
                 outputs="user_interaction_output",
                 name="user_interaction_loop_node",
             ),
         ],
-        tags="agent_rag"
+        tags="agent_rag",
     )
