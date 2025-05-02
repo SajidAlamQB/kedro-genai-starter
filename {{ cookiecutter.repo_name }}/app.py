@@ -84,13 +84,13 @@ async def registry():
 
 
 @app.post("/run/{pipeline_name}")
-async def run_pipeline(pipeline_name: str):
+async def run_pipeline(pipeline_name: str, tags: list[str], params: dict = None):
     """
     Runs a Kedro pipeline and returns the result.
     """
-    with KedroSession.create(env=settings.kedro_env) as session:
+    with KedroSession.create(env=settings.kedro_env, extra_params=params) as session:
         try:
-            output = session.run(pipeline_name=pipeline_name)
+            output = session.run(pipeline_name=pipeline_name, tags=tags)
         except Exception as e:
             raise HTTPException(
                 500,
