@@ -6,6 +6,7 @@ from .nodes import (
     create_chat_prompt,
     create_tools,
     init_llm,
+    select_vector_store,
     user_interaction_loop,
 )
 
@@ -14,8 +15,18 @@ def create_pipeline(**kwargs) -> Pipeline:
     return pipeline(
         [
             node(
+                func=select_vector_store,
+                inputs=[
+                    "params:vector_store_type",
+                    "deeplake_vector_store_load",
+                    "pinecone_vector_store_load",
+                ],
+                outputs="selected_vector_store_load",
+                name="select_vector_store_load_node",
+            ),
+            node(
                 func=create_tools,
-                inputs=["vector_store_load", "embedding_function"],
+                inputs=["selected_vector_store_load", "embedding_function"],
                 outputs="tools",
                 name="create_tools_node",
             ),
@@ -45,7 +56,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             ),
             node(
                 func=user_interaction_loop,
-                inputs=["agent_executor", "llm", "params:user_query"],
+                inputs=["agent_executor", "llm", "params:vector_store_type", "params:user_query"],
                 outputs="user_interaction_output",
                 name="user_interaction_loop_node",
             ),

@@ -1,1 +1,2 @@
 from .vector_store_dataset import DeeplakeVectorStoreDataset
+from .pinecone_dataset import PineconeVectorStoreDataset

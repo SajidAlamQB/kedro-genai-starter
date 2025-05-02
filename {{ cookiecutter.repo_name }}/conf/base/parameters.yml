@@ -1,2 +1,8 @@
-# 2 ** 16
-embedding_size: 65536
+# Vector store configuration
+vector_store_type: "deeplake"  # Options: "deeplake" (local) or "pinecone" (cloud)
+
+# Embedding size (2^14 = 16384)
+embedding_size: 16384
+
+# Default user query (required for non-interactive mode)
+user_query: "What is Kedro?"
