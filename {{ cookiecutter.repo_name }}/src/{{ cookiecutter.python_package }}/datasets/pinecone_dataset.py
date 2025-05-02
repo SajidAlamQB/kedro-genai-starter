@@ -1,4 +1,5 @@
 """Pinecone vector database dataset for Kedro."""
+
 from typing import Any, NoReturn, Optional, List, Dict
 
 from kedro.io import AbstractDataset, DatasetError
@@ -12,15 +13,15 @@ class PineconeVectorStoreDataset(AbstractDataset):
     """
 
     def __init__(
-            self,
-            credentials: Optional[dict] = None,
-            dimension: int = 16384,
-            metric: str = "cosine",
-            namespace: Optional[str] = None,
-            api_key: Optional[str] = None,
-            environment: Optional[str] = None,
-            index_name: Optional[str] = None,
-            **kwargs,
+        self,
+        credentials: Optional[dict] = None,
+        dimension: int = 16384,
+        metric: str = "cosine",
+        namespace: Optional[str] = None,
+        api_key: Optional[str] = None,
+        environment: Optional[str] = None,
+        index_name: Optional[str] = None,
+        **kwargs,
     ):
         """Initializes the dataset with Pinecone credentials and index information.
 
@@ -78,12 +79,7 @@ class PineconeVectorStoreDataset(AbstractDataset):
                     name=self._index_name,
                     dimension=self._dimension,
                     metric=self._metric,
-                    spec={
-                        "serverless": {
-                            "cloud": "aws",
-                            "region": self._environment
-                        }
-                    }
+                    spec={"serverless": {"cloud": "aws", "region": self._environment}},
                 )
 
             # Get the index
@@ -114,7 +110,12 @@ class PineconeVectorStoreDataset(AbstractDataset):
                 self.namespace = namespace
                 self.dimension = dimension
 
-            def add(self, text: List[str], embedding: List[List[float]], metadata: List[Dict] = None):
+            def add(
+                self,
+                text: List[str],
+                embedding: List[List[float]],
+                metadata: List[Dict] = None,
+            ):
                 """Add items to the vector store with a DeepLake-compatible interface."""
                 if metadata is None:
                     metadata = [{}] * len(text)
@@ -130,40 +131,46 @@ class PineconeVectorStoreDataset(AbstractDataset):
                     meta["text"] = txt
 
                     # Create a record with Pinecone v2 format - using 'id' instead of '_id'
-                    records.append({
-                        "id": f"vec_{i}_{hash(txt) % 10000}",  # Changed from '_id' to 'id'
-                        "values": emb,
-                        "metadata": meta
-                    })
+                    records.append(
+                        {
+                            "id": f"vec_{i}_{hash(txt) % 10000}",  # Changed from '_id' to 'id'
+                            "values": emb,
+                            "metadata": meta,
+                        }
+                    )
 
                 # Upsert in batches of 100
                 batch_size = 100
                 for i in range(0, len(records), batch_size):
-                    batch = records[i:i+batch_size]
+                    batch = records[i : i + batch_size]
                     try:
                         # First try the direct upsert method
-                        self.index.upsert(
-                            vectors=batch,
-                            namespace=self.namespace
-                        )
+                        self.index.upsert(vectors=batch, namespace=self.namespace)
                     except Exception as e:
-                        print(f"Warning: First upsert attempt failed with error: {str(e)}. Trying alternate format...")
+                        print(
+                            f"Warning: First upsert attempt failed with error: {str(e)}. Trying alternate format..."
+                        )
                         try:
                             # Try the records format as a fallback
                             self.index.upsert_records(
-                                namespace=self.namespace,
-                                records=batch
+                                namespace=self.namespace, records=batch
                             )
                         except Exception as e2:
-                            print(f"Warning: Second upsert attempt also failed: {str(e2)}. Check Pinecone configuration.")
+                            print(
+                                f"Warning: Second upsert attempt also failed: {str(e2)}. Check Pinecone configuration."
+                            )
                             raise
 
                 return len(records)
 
-            def search(self, embedding_data: str, embedding_function: callable, k: int = 1):
+            def search(
+                self, embedding_data: str, embedding_function: callable, k: int = 1
+            ):
                 """Search the vector store with a DeepLake-compatible interface."""
                 # Convert query to embedding - ensure correct dimensionality
-                query_embedding = embedding_function([embedding_data], self.dimension)[0]
+                query_embedding = embedding_function([embedding_data], self.dimension)[
+                    0
+                ]
                 if hasattr(query_embedding, "tolist"):
                     query_embedding = query_embedding.tolist()
 
@@ -181,12 +188,19 @@ class PineconeVectorStoreDataset(AbstractDataset):
                     metadata = []
 
                     # Handle different result formats
-                    if hasattr(results, 'matches') and results.matches:
-                        texts = [match.metadata.get("text", "") for match in results.matches if hasattr(match, 'metadata')]
+                    if hasattr(results, "matches") and results.matches:
+                        texts = [
+                            match.metadata.get("text", "")
+                            for match in results.matches
+                            if hasattr(match, "metadata")
+                        ]
                         metadata = results.matches
-                    elif isinstance(results, dict) and 'matches' in results:
-                        texts = [match.get('metadata', {}).get("text", "") for match in results['matches']]
-                        metadata = results['matches']
+                    elif isinstance(results, dict) and "matches" in results:
+                        texts = [
+                            match.get("metadata", {}).get("text", "")
+                            for match in results["matches"]
+                        ]
+                        metadata = results["matches"]
 
                     if not texts:
                         texts = ["No relevant context found in Pinecone index"]
@@ -194,7 +208,9 @@ class PineconeVectorStoreDataset(AbstractDataset):
                     return {"text": texts, "metadata": metadata}
 
                 except Exception as e:
-                    print(f"Warning: Initial search attempt failed: {str(e)}. Trying alternate format...")
+                    print(
+                        f"Warning: Initial search attempt failed: {str(e)}. Trying alternate format..."
+                    )
 
                     try:
                         # Try with query_vector param instead
@@ -202,19 +218,26 @@ class PineconeVectorStoreDataset(AbstractDataset):
                             namespace=self.namespace,
                             top_k=k,
                             include_metadata=True,
-                            query_vector=query_embedding
+                            query_vector=query_embedding,
                         )
 
                         # Extract text from results
                         texts = []
                         metadata = []
 
-                        if hasattr(results, 'matches') and results.matches:
-                            texts = [match.metadata.get("text", "") for match in results.matches if hasattr(match, 'metadata')]
+                        if hasattr(results, "matches") and results.matches:
+                            texts = [
+                                match.metadata.get("text", "")
+                                for match in results.matches
+                                if hasattr(match, "metadata")
+                            ]
                             metadata = results.matches
-                        elif isinstance(results, dict) and 'matches' in results:
-                            texts = [match.get('metadata', {}).get("text", "") for match in results['matches']]
-                            metadata = results['matches']
+                        elif isinstance(results, dict) and "matches" in results:
+                            texts = [
+                                match.get("metadata", {}).get("text", "")
+                                for match in results["matches"]
+                            ]
+                            metadata = results["matches"]
 
                         if not texts:
                             texts = ["No relevant context found in Pinecone index"]
@@ -222,8 +245,13 @@ class PineconeVectorStoreDataset(AbstractDataset):
                         return {"text": texts, "metadata": metadata}
 
                     except Exception as e2:
-                        print(f"Warning: All search attempts failed: {str(e2)}. Returning empty results.")
-                        return {"text": ["Error querying Pinecone index"], "metadata": []}
+                        print(
+                            f"Warning: All search attempts failed: {str(e2)}. Returning empty results."
+                        )
+                        return {
+                            "text": ["Error querying Pinecone index"],
+                            "metadata": [],
+                        }
 
         return PineconeWrapper(index, self._namespace, self._dimension)
 
@@ -238,8 +266,10 @@ class PineconeVectorStoreDataset(AbstractDataset):
         Raises:
             DatasetError: Always raised since direct saving is not supported.
         """
-        raise DatasetError(f"{self.__class__.__name__} does not support direct saving. "
-                          "The index is created during initialization.")
+        raise DatasetError(
+            f"{self.__class__.__name__} does not support direct saving. "
+            "The index is created during initialization."
+        )
 
     def _describe(self) -> dict[str, Any]:
         """Returns a dictionary describing the dataset configuration.
@@ -253,5 +283,5 @@ class PineconeVectorStoreDataset(AbstractDataset):
             "namespace": self._namespace,
             "dimension": self._dimension,
             "metric": self._metric,
-            **self._kwargs
+            **self._kwargs,
         }

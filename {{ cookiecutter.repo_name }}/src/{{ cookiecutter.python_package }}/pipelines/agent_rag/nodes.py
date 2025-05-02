@@ -37,7 +37,9 @@ def select_vector_store(
         return deeplake_vector_store_load
     elif vector_store_type.lower() == "pinecone":
         if pinecone_vector_store_load is None:
-            print("WARNING: Pinecone vector store not available. Falling back to DeepLake.")
+            print(
+                "WARNING: Pinecone vector store not available. Falling back to DeepLake."
+            )
             if deeplake_vector_store_load is None:
                 raise ValueError("DeepLake vector store (fallback) is not initialized")
             return deeplake_vector_store_load
@@ -46,9 +48,7 @@ def select_vector_store(
         raise ValueError(f"Unsupported vector store type: {vector_store_type}")
 
 
-def create_tools(
-    vector_store: Any, embedding_function: Callable
-) -> list[Callable]:
+def create_tools(vector_store: Any, embedding_function: Callable) -> list[Callable]:
     """Creates a tool for retrieving context from the vector store based on user queries.
 
     Compatible with both DeepLake and Pinecone vector stores thanks to the adapter pattern
@@ -187,7 +187,7 @@ def user_interaction_loop(
     agent_executor: AgentExecutor,
     llm: ChatOpenAI,
     vector_store_type: str,
-    user_query: str
+    user_query: str,
 ) -> str:
     """Interactive loop to receive user input and process responses from the LLM and agent.
 
@@ -211,12 +211,10 @@ def user_interaction_loop(
     agent_res = f"### Agent Output:\n{agent_response['output']}\n"
     agent_intermediate_steps = f"### Agent Intermediate Steps:\n```json\n{agent_response['intermediate_steps']}\n```\n"
     try:
-        context = agent_response['intermediate_steps'][0][1]
+        context = agent_response["intermediate_steps"][0][1]
     except IndexError:
         context = FALLBACK_MESSAGE
-    retrieved_context = (
-        f"### Retrieved Context:\n{context}\n"
-    )
+    retrieved_context = f"### Retrieved Context:\n{context}\n"
     vector_db_info = f"### Vector Database: {vector_store_type}\n"
 
     res.append(
