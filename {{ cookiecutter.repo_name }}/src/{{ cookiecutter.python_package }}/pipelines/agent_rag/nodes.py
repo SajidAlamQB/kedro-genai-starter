@@ -47,7 +47,7 @@ def select_vector_store(
 
 
 def create_tools(
-        vector_store: Any, embedding_function: Callable
+    vector_store: Any, embedding_function: Callable
 ) -> list[Callable]:
     """Creates a tool for retrieving context from the vector store based on user queries.
 
@@ -76,7 +76,7 @@ def create_tools(
 
 
 def init_llm(
-        openai_llm: ChatOpenAI, tools: list[Callable]
+    openai_llm: ChatOpenAI, tools: list[Callable]
 ) -> tuple[ChatOpenAI, Runnable]:
     """Initializes the LLM with provided tools.
 
@@ -115,7 +115,7 @@ def create_chat_prompt(system_prompt: str) -> ChatPromptTemplate:
 
 
 def create_agent(
-        llm_with_tools: Runnable, chat_prompt: ChatPromptTemplate
+    llm_with_tools: Runnable, chat_prompt: ChatPromptTemplate
 ) -> RunnableSerializable:
     """Creates an AI agent using the provided LLM and chat prompt.
 
@@ -127,21 +127,21 @@ def create_agent(
         RunnableSerializable: The AI agent instance.
     """
     agent: RunnableSerializable = (
-            {
-                "input": lambda x: x["input"],
-                "agent_scratchpad": lambda x: format_to_openai_tool_messages(
-                    x["intermediate_steps"]
-                ),
-            }
-            | chat_prompt
-            | llm_with_tools
-            | OpenAIToolsAgentOutputParser()
+        {
+            "input": lambda x: x["input"],
+            "agent_scratchpad": lambda x: format_to_openai_tool_messages(
+                x["intermediate_steps"]
+            ),
+        }
+        | chat_prompt
+        | llm_with_tools
+        | OpenAIToolsAgentOutputParser()
     )
     return agent
 
 
 def create_agent_executor(
-        agent: RunnableSerializable, tools: list[Callable]
+    agent: RunnableSerializable, tools: list[Callable]
 ) -> AgentExecutor:
     """Creates an agent executor to manage interactions with the AI agent.
 
@@ -184,10 +184,10 @@ def invoke_llm(llm: ChatOpenAI, input_query: str) -> str:
 
 
 def user_interaction_loop(
-        agent_executor: AgentExecutor,
-        llm: ChatOpenAI,
-        vector_store_type: str,
-        user_query: str
+    agent_executor: AgentExecutor,
+    llm: ChatOpenAI,
+    vector_store_type: str,
+    user_query: str
 ) -> str:
     """Interactive loop to receive user input and process responses from the LLM and agent.
 
